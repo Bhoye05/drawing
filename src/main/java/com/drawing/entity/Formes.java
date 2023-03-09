@@ -15,20 +15,19 @@ public class Formes implements Serializable{
 	private int w;
 	
 	public Formes(String nom,Color c,int x1, int y1, int h1, int w1) {
-		// TODO Auto-generated constructor stub
-		typeForme=nom;
+
+		typeForme = nom;
 		x=x1;
 		y=y1;
 		h=h1;
 		w=w1;
-		if(typeForme.equals("QUIT"))
-		{numero=-1;
+
+		if( typeForme.equals("QUIT")) {
+			numero=-1;
+		} else {
+			numero = numForme;
 		}
-		else
-		{
-		numero=numForme;
-		}
-		numForme++;
+		numForme ++;
 		couleur = c;
 		texteAecrire = new String("none");
 	}
@@ -38,8 +37,7 @@ public class Formes implements Serializable{
 		return typeForme;
 	}
 	
-	public int get_x()
-	{
+	public int get_x() {
 		return x;
 	}
 	
