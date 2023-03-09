@@ -81,25 +81,16 @@ public class Client implements Runnable{
                                 fentre.btnDessiner.setBackground(new Color(0,0,255));
 
 
-                            }
-                            else
-                            {
-                                if(formes.getType().equals("criser"))
-                                {
+                            } else {
+                                if(formes.getType().equals("griser")) {
                                     fentre.btnDessiner.setText("Attente");
                                     fentre.btnDessiner.setEnabled(false);
-                                    System.out.print("crise");
-                                }
-                                else
-                                {
-                                    if(formes.getType().equals("a_la_main"))
-                                    {
+                                } else {
+                                    if(formes.getType().equals("a_la_main")) {
                                         isCanceled =true;
                                         //fentre.dispose();
                                         fentre.fermeture();
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         if(formes.getType().equals("sortir"))
                                         {
                                             isCanceled =true;

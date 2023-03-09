@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import static com.drawing.utils.Utils.SERVER_PORT;
 
 public class Serveur {
+    public static final String FERMETURE_DU_SEREUR = "fermeture du sereur";
     private static Logger logger = Logger.getLogger(Serveur.class.getName());
     private static Serveur serveur;
     private static ServerSocket serverSocket =null;
@@ -30,7 +31,7 @@ public class Serveur {
                 }
                 logger.info("connecté");
             }
-            logger.info("fermer");
+            logger.info(FERMETURE_DU_SEREUR);
         }   catch(Exception e){
             logger.info(e.getMessage());
         }
@@ -41,7 +42,7 @@ public class Serveur {
     //====================deconnection=========================//
     synchronized public void fermer() throws IOException {
         serverSocket.close();
-        logger.info("fermer");
+        logger.info(FERMETURE_DU_SEREUR);
     }
 
 }

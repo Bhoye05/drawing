@@ -9,6 +9,7 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
@@ -27,7 +28,7 @@ import static com.drawing.utils.Utils.IMAGE_PATH;
 
 public class Connection implements ActionListener{
 
-	private static Logger logger = Logger.getLogger(Connection.class.getName());
+	private static final Logger logger = Logger.getLogger(Connection.class.getName());
 	private JFrame frame;
 	private JTextField UsernameTextField;
 	private JPasswordField passwordField;
@@ -124,7 +125,7 @@ public class Connection implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == btnOk) {
-			logger.info("Password: " + this.passwordField.getPassword());
+			logger.info("Password: " + Arrays.toString(this.passwordField.getPassword()));
 			if(this.UsernameTextField.getText().equals("uc") && this.passwordField.getText().equals("uc")) {
 
 			drawingWindow = new DrawingWindow();
@@ -138,8 +139,7 @@ public class Connection implements ActionListener{
 			client.connecter();
 			}
 			else {
-				 JOptionPane dia = new JOptionPane();
-				 dia.showMessageDialog(null, "Login ou mot de pass incorrect",
+				JOptionPane.showMessageDialog(null, "Login ou mot de pass incorrect",
 					  "Accès refusé", JOptionPane.INFORMATION_MESSAGE,
 					  		new ImageIcon(IMAGE_PATH + "erreur.jpg"));
       

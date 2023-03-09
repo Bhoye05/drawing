@@ -1,6 +1,7 @@
 package com.drawing.vue;
 
 import com.drawing.entity.Formes;
+import org.apache.commons.lang3.StringUtils;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -16,103 +17,98 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class ZoneDessin extends JPanel{
-	
-	private int nbObjetEnregistre=0;
+
+	public static final String ENTREZ_TEXTE = "Veuillez entrez le texte à Saisir !";
+	public static final String ELLIPSE = "ellipse";
+	private static final Logger logger = Logger.getLogger(ZoneDessin.class.getName());
+	public static final String RECTANGLE = "rectangle";
+	public static final String LIGNE = "ligne";
+	public static final String FORME = "forme";
+	public static final String TEXTE = "texte";
+
 	private Point origine;
 	private Point extremite;
 	private Vector<Formes> ensembleForme;
 	private int indiceForme;
-	private File fichier;
-	public static String message= new String();
+	public static String message= StringUtils.EMPTY;
 	
 	/*--------------------Constructeur--------------------*/
 	public ZoneDessin() {
-		// TODO Auto-generated constructor stub
 		initialisation();
 		this.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e){				
-					Point p =new Point(e.getX(), e.getY());					
-					origine=p;						
-				
+			public void mousePressed(MouseEvent e){
+					origine = new Point(e.getX(), e.getY());
 			}
-			public void mouseClicked(MouseEvent e) 
-			{
-				if(DrawingWindow.supprimer)
-				{
-					Point pp = new Point(e.getX(), e.getY());	
-					boolean a = contienPoint(pp);
-					if(a)
-					{
+
+			public void mouseClicked (MouseEvent e) {
+				if(DrawingWindow.supprimer) {
+					Point point = new Point(e.getX(), e.getY());
+					boolean supprimer = contienPoint(point);
+					if(supprimer) {
 						supprimerForme(ensembleForme.elementAt(indiceForme));
-						}
-					
-					Formes f=new Formes("supp_Dessin", DrawingWindow.pinceau, indiceForme, 0, 0,
-				            0);
-				try{
-			
-				Connection.client.envoiForme(f);
+						repaint();
+					}
 
-                 }catch(Exception ee){ ee.printStackTrace();}
+					Formes formeToDelete = getFormeToDelete(point);
 
+					try {
+						Connection.client.envoiForme(formeToDelete);
+					} catch(Exception ee) {
+						ee.printStackTrace();
+					}
 					repaint();
 				}
 				
-				Point p =new Point(e.getX(), e.getY());	
-				if(DrawingWindow.texte)
-				{
-				    origine=p;	
-				    Formes f =new Formes("texte", DrawingWindow.pinceau, origine.x, origine.y, 80, 50);
-				    JOptionPane dialog = new JOptionPane();
-				    String nom = dialog.showInputDialog(null, "Veuillez entrez le texte à Saisir !", "SAISIE !", JOptionPane.QUESTION_MESSAGE);
-				    
-				    if(!nom.equals(null))
-				    {					    
-					    f.texteAecrire=nom;					   
-				    }
-				    ensembleForme.addElement(f);
+				Point mousePoint =new Point(e.getX(), e.getY());
+
+				if(DrawingWindow.texte) {
+				    origine=mousePoint;
+				    Formes formeToDraw = new Formes(TEXTE, DrawingWindow.pinceau, origine.x, origine.y, 80, 50);
+				    String texteASaisir = JOptionPane.showInputDialog(null, ENTREZ_TEXTE, "SAISIE !",
+							JOptionPane.QUESTION_MESSAGE);
+
+					if(StringUtils.isNoneBlank(texteASaisir)) {
+						formeToDraw.texteAecrire = texteASaisir;
+					}
+				    ensembleForme.addElement(formeToDraw);
 				    try{
-				    	Connection.client.envoiForme(f);
-						}catch(Exception ee){ ee.printStackTrace();}
-				    
+				    	Connection.client.envoiForme(formeToDraw);
+					}catch(Exception ee){ ee.printStackTrace();}
 				    repaint();
 				}
 			
-			
 			}
 			
-			public void mouseReleased(MouseEvent e)
-			{				
-				Point p = new Point(e.getX(), e.getY());
-				extremite=p;
-				
-				if(DrawingWindow.rectangle)
-				{			
-					Formes f = new Formes("rectangle", DrawingWindow.pinceau, origine.x, origine.y, extremite.x-origine.x,
+			public void mouseReleased(MouseEvent e) {
+				extremite = new Point(e.getX(), e.getY());
+				if(DrawingWindow.rectangle) {
+					Formes f = new Formes(RECTANGLE, DrawingWindow.pinceau, origine.x, origine.y, extremite.x-origine.x,
 							               extremite.y-origine.y);					
 					
 					ensembleForme.addElement(f);
 					try{
-					Connection.client.envoiForme(f);
-					}catch(Exception ee){ ee.printStackTrace();}
+						Connection.client.envoiForme(f);
+					}	catch(Exception ee) {
+						ee.printStackTrace();
+					}
 				}
-				if(DrawingWindow.ellipse)
-				{
-					Formes f = new Formes("ellipse", DrawingWindow.pinceau, origine.x, origine.y, extremite.x-origine.x,
+				if(DrawingWindow.ellipse) {
+					Formes f = new Formes(ELLIPSE, DrawingWindow.pinceau, origine.x, origine.y, extremite.x-origine.x,
 							               extremite.y-origine.y);
 					ensembleForme.addElement(f);
 					try{
 						Connection.client.envoiForme(f);
-						}catch(Exception ee){ ee.printStackTrace();}
+					}catch(Exception ee){ ee.printStackTrace();}
 					
 				}
-				if(DrawingWindow.ligne)
-				{
-					Formes f=new Formes("ligne", DrawingWindow.pinceau, origine.x, origine.y, extremite.x,
+				if(DrawingWindow.ligne) {
+					Formes f=new Formes(LIGNE, DrawingWindow.pinceau, origine.x, origine.y, extremite.x,
 							               extremite.y);
 					ensembleForme.addElement(f);
 					try{
@@ -141,7 +137,7 @@ public class ZoneDessin extends JPanel{
 				if(DrawingWindow.forme)
 				{
 					extremite=p;
-					Formes f=new Formes("forme", DrawingWindow.pinceau, origine.x, origine.y,extremite.x, extremite.y);
+					Formes f = new Formes(FORME, DrawingWindow.pinceau, origine.x, origine.y,extremite.x, extremite.y);
 					ensembleForme.addElement(f);
 					try{
 						Connection.client.envoiForme(f);
@@ -154,174 +150,120 @@ public class ZoneDessin extends JPanel{
 	}
 	
 	/*-------------------Methode de sauvegarde----------------*/
-	public void sauvegarder()throws IOException
-	{
-		fichier = new File ("formes.objet");
+	public void sauvegarder()throws IOException {
+		File fichier = new File ("formes.objet");
 		File nbForme = new File("nbObjets");
-		ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream (fichier));
-		ObjectOutputStream oos1 = new ObjectOutputStream (new FileOutputStream (nbForme));
-		oos1.write(ensembleForme.size());
-		//oos.write(ensembleForme.size());
-		nbObjetEnregistre=ensembleForme.size();
-		for(Formes f : ensembleForme)
-		{			
-			oos.writeObject(f);			
-		}	
-		oos.close();
-		oos1.close();
+		ObjectOutputStream filetosaveOutputStream = new ObjectOutputStream (new FileOutputStream (fichier));
+		ObjectOutputStream nbFormeOutputStream = new ObjectOutputStream (new FileOutputStream (nbForme));
+		nbFormeOutputStream.write(ensembleForme.size());
+		for(Formes formeToSave : ensembleForme) {
+			filetosaveOutputStream.writeObject(formeToSave);
+		}
+
+		filetosaveOutputStream.close();
+		nbFormeOutputStream.close();
 	}
 	
 	/*------------------Methode de restauration---------------*/
-	public void restaurer(String nomFic)throws Exception
-	{
-		 
-		 Vector<Formes> tmpForme = new Vector<Formes>();
-		 ObjectInputStream ois = new ObjectInputStream (new FileInputStream (nomFic));
-		 ObjectInputStream ois1 =new ObjectInputStream(new FileInputStream ("nbObjets"));
-		 
-		// int nbEntre = (int)ois.readInt();
-		 int size = (int)ois1.read();
-		 for(int i=0; i<size; i++)
-		 {
-			 Formes ff=(Formes)ois.readObject();
-			 tmpForme.addElement(ff);			 
+	public void restaurer(String filename)throws Exception {
+		 ObjectInputStream fileInputStream = new ObjectInputStream (new FileInputStream (filename));
+		 ObjectInputStream nbObjectsInputStream =new ObjectInputStream(new FileInputStream ("nbObjets"));
+
+		 int size =  nbObjectsInputStream.read();
+		 for(int i=0; i < size; i++) {
+			 Formes formeToRestore= (Formes) fileInputStream.readObject();
+			 Connection.client.envoiForme(formeToRestore);
+			 this.ajoutForme(formeToRestore);
 		 }
-		 
-		// if(tmpForme.size()>ensembleForme.size())
-		 //{
-			// ensembleForme=tmpForme;
-			
-		// }
-		 for(int i=0;i<tmpForme.size();++i)
-		 {
-			 Connection.client.envoiForme(tmpForme.elementAt(i));
-			 this.ajoutForme(tmpForme.elementAt(i));
-		 }
+
 		 repaint();
-		 ois.close();
-		 ois1.close();		 
+		 fileInputStream.close();
+		 nbObjectsInputStream.close();
 	}	
 	
 	
 	/*-------------------Supprimer un dessin----------------*/
-	public boolean contienPoint(Point p)
-	{
-		boolean b =false;
+	public boolean contienPoint(Point p) {
+		boolean included =false;
 		int i=0;
-	
-		while(i<ensembleForme.size() && (ensembleForme.elementAt(i).get_x() > p.x ||
-				                         ensembleForme.elementAt(i).get_h()>p.y ||
-				                         ensembleForme.elementAt(i).get_x()+ensembleForme.elementAt(i).get_h()<p.x ||
-				                         ensembleForme.elementAt(i).get_y()+ensembleForme.elementAt(i).get_w()<p.y))
-		{
-			System.out.println("CoordFormeOrigine >"+ensembleForme.elementAt(i).get_x()+" - "+ensembleForme.elementAt(i).get_y());
-			System.out.println("CoordFormeExtremite >"+ensembleForme.elementAt(i).get_x()+ensembleForme.elementAt(i).get_h()+" - "+
-			                                           ensembleForme.elementAt(i).get_y()+ensembleForme.elementAt(i).get_w());
-			System.out.println("coordPoint >"+p.x+" - "+p.y);
-			
+		while( i < ensembleForme.size() && !isInclude(p, ensembleForme.elementAt(i))) {
 			i++;
 		}
-		if(i<ensembleForme.size())
-		{
-			indiceForme=i;
-			b=true;
+		if(i < ensembleForme.size()) {
+			indiceForme = i;
+			included = true;
 		}
-		
-		return b;
-		
+		return included;
+	}
+
+	public boolean isInclude(Point p, Formes forme) {
+		return (forme.get_x() < p.getX() && forme.get_y() < p.getY() &&
+				forme.get_x() + forme.get_h() > p.getX()  && forme.get_y() + forme.get_w() > p.getY());
+	}
+
+	public Formes getFormeToDelete(Point mouseClickpoint) {
+		Formes formeToReturn = new Formes("supp_Dessin", DrawingWindow.pinceau, indiceForme, 0, 0, 0);
+		for (Formes forme : ensembleForme) {
+			if (isInclude(mouseClickpoint, forme)) {
+				formeToReturn = forme;
+				break;
+			}
+		}
+		return formeToReturn;
 	}
 	
 	
 	/*----------------------Initialisation------------------*/
-	public void initialisation()
-	{
+	public void initialisation() {
+		logger.info("Initialisation");
 		this.setBackground(new Color(255,255,255));
 		origine = new Point();
 		extremite = new Point();
-		ensembleForme=new Vector<Formes>();		
+		ensembleForme = new Vector<>();
 	}
 
 	/*------------------getters et setters-------------------*/
-	public Vector<Formes> getEnsembleForme()
-	{
+	public Vector<Formes> getEnsembleForme() {
 		return ensembleForme;
 	}
 	
 	
-	public void ajoutForme(Formes f)
-	{
+	public void ajoutForme(Formes f) {
 		ensembleForme.addElement(f);
 	}
 	
-	public void supprimerForme(Formes f)
-	{
-	  if(ensembleForme.contains(f))
-	  {
+	public void supprimerForme(Formes f) {
 		ensembleForme.remove(f);
-	  }
 	}
-	
-	public Point getOrigine()
-	{
-		return origine;
-	}
-	
-	public Point getextremite()
-	{
-		return extremite;
-	}
-	
-	public void setOrigine(Point p)
-	{
-		origine = p;
-	}
-	
-	public void setExtremite(Point p)
-	{
-		extremite=p;
-	}		
 	
 	/*--------------redefinition de Paincomponent-----------------*/
 	@Override
-	public void paintComponent(Graphics g) {
-		// TODO Auto-generated method stub
-		super.paintComponent(g);	
-		g.setFont(new Font("arial", 1, 25));
+	public void paintComponent(Graphics graphics) {
+		super.paintComponent(graphics);
+		graphics.setFont(new Font("arial", Font.BOLD, 20));
 		
-		if(!ensembleForme.isEmpty())
-		{			
-			for(int i=0; i<ensembleForme.size();i++)
-			{
-			 g.setColor(ensembleForme.elementAt(i).couleur);
-			 if(ensembleForme.elementAt(i).getType().equals("rectangle"))
-			 {
-				Formes f=ensembleForme.elementAt(i);				
-				g.drawRect(f.get_x(), f.get_y(), f.get_h(), f.get_w());
-			 }
-			 else if(ensembleForme.elementAt(i).getType().equals("ellipse"))
-			 {
-				    Formes f=ensembleForme.elementAt(i);				
-					g.drawOval(f.get_x(), f.get_y(), f.get_h(), f.get_w());
-			 }
-			 else if(ensembleForme.elementAt(i).getType().equals("ligne"))
-			 {
-				 Formes f = ensembleForme.elementAt(i);
-				 g.drawLine(f.get_x(), f.get_y(), f.get_h(), f.get_w());
-			 }
-			 else if(ensembleForme.elementAt(i).getType().equals("forme"))
-			 {
-				Formes f = ensembleForme.elementAt(i);
-				g.drawLine(f.get_x(), f.get_y(), f.get_h(), f.get_w());
-			 }
-			 else if(ensembleForme.elementAt(i).getType().equals("texte"))
-			 {
-				 Formes f = ensembleForme.elementAt(i);
-				 g.drawString(f.texteAecrire,f.get_x() , f.get_y());
-				
-			 }
+		if(!ensembleForme.isEmpty()) {
+
+			for(Formes forme : ensembleForme) {
+				graphics.setColor(forme.couleur);
+				switch (forme.getType()) {
+					case RECTANGLE:
+						graphics.drawRect(forme.get_x(), forme.get_y(), forme.get_h(), forme.get_w());
+						break;
+					case ELLIPSE:
+						graphics.drawOval(forme.get_x(), forme.get_y(), forme.get_h(), forme.get_w());
+						break;
+					case LIGNE:
+					case FORME:
+						graphics.drawLine(forme.get_x(), forme.get_y(), forme.get_h(), forme.get_w());
+						break;
+					case TEXTE:
+						graphics.drawString(forme.texteAecrire,forme.get_x() , forme.get_y());
+						break;
+					default:
+						break;
+				}
 			}
 		}
-		
-	}	
-	
+	}
 }

@@ -80,15 +80,34 @@ public class DrawingWindow extends JFrame implements ActionListener, WindowListe
         labelCouleur = new JLabel("Active");
         /*-------------creation des boutons-------------*/
         btnExit = new JButton("Exit");
+        btnExit.setName(ButtonsConstants.EXIT);
+
         btnEllipse = new JButton("Ellipse");
+        btnEllipse.setName(ButtonsConstants.ELLIPSE);
+
         btnDessiner = new JButton("Dessiner");
+        btnDessiner.setName(ButtonsConstants.DESSINER);
+
         btnForme= new JButton("Forme");
+        btnForme.setName(ButtonsConstants.FORME);
+
         btnRectangle = new JButton("Rectangle");
+        btnRectangle.setName(ButtonsConstants.RECTANGLE);
+
         btnText = new JButton("Texte");
+        btnText.setName(ButtonsConstants.TEXTE);
+
         btnLigne = new JButton("Ligne");
+        btnLigne.setName(ButtonsConstants.LIGNE);
+
         btnEnregistre = new JButton(new ImageIcon(IMAGE_PATH + "enregistrer.png"));
+        btnEnregistre.setName("Enregistrer");
+
         restaurer = new JButton(new ImageIcon(IMAGE_PATH + "restaurer.jpg"));
+        restaurer.setName("Restaurer");
+
         gomme =  new JButton(new ImageIcon(IMAGE_PATH + "gomme.jpg"));
+        gomme.setName("Gomme");
 
         /*--------------taille des boutons-------------*/
         btnExit.setMaximumSize(new Dimension(70, 20));
@@ -119,12 +138,14 @@ public class DrawingWindow extends JFrame implements ActionListener, WindowListe
         actif = new JButton();
         actif.setName(ButtonsConstants.ACTIF);
         exit = new JButton(new ImageIcon(IMAGE_PATH + "deconnexion.png"));
+        exit.setName("Exit");
         exit.addActionListener(this);
         exit.setPreferredSize(new Dimension(25,25));
         exit.setMaximumSize(new Dimension(25,25));
 
         /*-------------------  gestion de la main------------------*/
         ceder = new JButton();
+        ceder.setName("Ceder");
         ceder.addActionListener(this);
         ceder.setEnabled(false);
 
@@ -324,18 +345,6 @@ public class DrawingWindow extends JFrame implements ActionListener, WindowListe
         connect=false;
     }
 
-    public void polygone() {
-        rectangle = false;
-        ellipse = false ;
-        forme = false;
-        texte = false;
-        polygone = true;
-        ligne = false;
-        supprimer=false;
-        quit =false;
-        connect=false;
-    }
-
     public void setLigne() {
         rectangle = false;
         ellipse = false ;
@@ -453,51 +462,8 @@ public class DrawingWindow extends JFrame implements ActionListener, WindowListe
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        String source = ((JButton) e.getSource()).getName();
-        logger.info(source);
 
-        switch (source) {
-            case ButtonsConstants.BLEU:
-                actif.setBackground(bleu.getBackground());
-                pinceau=actif.getBackground();
-                break;
-            case ButtonsConstants.RED:
-                actif.setBackground(red.getBackground());
-                pinceau=red.getBackground();
-                break;
-
-        }
-
-        if(e.getSource()==bleu)
-        {
-            actif.setBackground(bleu.getBackground());
-            pinceau=actif.getBackground();
-        }
-        if(e.getSource()==red)
-        {
-            actif.setBackground(red.getBackground());
-            pinceau=red.getBackground();
-        }
-        if(e.getSource()==jaune)
-        {
-            actif.setBackground(jaune.getBackground());
-            pinceau=jaune.getBackground();
-        }
-        if(e.getSource()==vert)
-        {
-            actif.setBackground(vert.getBackground());
-            pinceau=vert.getBackground();
-        }
-        if(e.getSource()==noir)
-        {
-            actif.setBackground(noir.getBackground());
-            pinceau=noir.getBackground();
-        }
-        if(e.getSource()==violet)
-        {
-            actif.setBackground(violet.getBackground());
-            pinceau=violet.getBackground();
-        }
+        this.changeColorActionPerformed(e);
 
         if(e.getSource()==btnEllipse)
         {
@@ -547,13 +513,48 @@ public class DrawingWindow extends JFrame implements ActionListener, WindowListe
         if(e.getSource()==exit)
         {
             this.applicationExit();
-            //this.setVisible(false);
         }
         if(e.getSource()==btnDessiner)
         {
-            zoneDessin.message=btnDessiner.getLabel();
+            zoneDessin.message=btnDessiner.getText();
             this.sendDrawedFormesToNewlyConnectClient();
         }
+    }
+
+    public void changeColorActionPerformed(ActionEvent e) {
+
+        String source = ((JButton) e.getSource()).getName();
+        logger.info(source);
+
+        switch (source) {
+            case ButtonsConstants.BLEU:
+                actif.setBackground(bleu.getBackground());
+                pinceau=actif.getBackground();
+                break;
+            case ButtonsConstants.RED:
+                actif.setBackground(red.getBackground());
+                pinceau=red.getBackground();
+                break;
+            case ButtonsConstants.JAUNE:
+                actif.setBackground(jaune.getBackground());
+                pinceau=jaune.getBackground();
+                break;
+            case ButtonsConstants.VERT:
+                actif.setBackground(vert.getBackground());
+                pinceau=vert.getBackground();
+                break;
+            case ButtonsConstants.NOIR:
+                actif.setBackground(noir.getBackground());
+                pinceau=noir.getBackground();
+                break;
+            case ButtonsConstants.VIOLET:
+                actif.setBackground(violet.getBackground());
+                pinceau=violet.getBackground();
+                break;
+            default:
+                break;
+        }
+
     }
 
     public void ceder() {
@@ -605,14 +606,6 @@ public class DrawingWindow extends JFrame implements ActionListener, WindowListe
     public void windowDeactivated(WindowEvent e) {
         // TODO Auto-generated method stub
 
-    }
-
-    /*------------------main----------------------*/
-    public static void main(String[] args) {
-        DrawingWindow drawingWindow = new DrawingWindow();
-        drawingWindow.setSize(800, 600);
-        drawingWindow.setTitle("Interface de Dessin 1.0");
-        drawingWindow.setVisible(true);
     }
 
 }
